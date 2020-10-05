@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	_ "github.com/denisenkom/go-mssqldb"
 	"gorm.io/gorm"
 	"gorm.io/gorm/callbacks"
 	"gorm.io/gorm/clause"
@@ -16,26 +15,16 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-type Config struct {
-	DriverName string
-	DSN        string
-	Conn       gorm.ConnPool
-}
-
 type Dialector struct {
-	*Config
+	db *sql.DB
 }
 
 func (dialector Dialector) Name() string {
 	return "sqlserver"
 }
 
-func Open(dsn string) gorm.Dialector {
-	return &Dialector{Config: &Config{DSN: dsn}}
-}
-
-func New(config Config) gorm.Dialector {
-	return &Dialector{Config: &config}
+func New(db *sql.DB) gorm.Dialector {
+	return &Dialector{db: db}
 }
 
 func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
@@ -44,18 +33,7 @@ func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
 	callbacks.RegisterDefaultCallbacks(db, &callbacks.Config{})
 	db.Callback().Create().Replace("gorm:create", Create)
 
-	if dialector.DriverName == "" {
-		dialector.DriverName = "sqlserver"
-	}
-
-	if dialector.Conn != nil {
-		db.ConnPool = dialector.Conn
-	} else {
-		db.ConnPool, err = sql.Open(dialector.DriverName, dialector.DSN)
-		if err != nil {
-			return err
-		}
-	}
+	db.ConnPool = dialector.db
 
 	for k, v := range dialector.ClauseBuilders() {
 		db.ClauseBuilders[k] = v
