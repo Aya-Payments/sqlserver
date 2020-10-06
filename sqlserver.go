@@ -89,8 +89,8 @@ func (dialector Dialector) Migrator(db *gorm.DB) gorm.Migrator {
 }
 
 func (dialector Dialector) BindVarTo(writer clause.Writer, stmt *gorm.Statement, v interface{}) {
-	writer.WriteString("@p")
-	writer.WriteString(strconv.Itoa(len(stmt.Vars)))
+	writer.WriteString("?")
+	//writer.WriteString(strconv.Itoa(len(stmt.Vars)))
 }
 
 func (dialector Dialector) QuoteTo(writer clause.Writer, str string) {
@@ -112,17 +112,7 @@ func (dialector Dialector) QuoteTo(writer clause.Writer, str string) {
 var numericPlaceholder = regexp.MustCompile("@p(\\d+)")
 
 func (dialector Dialector) Explain(sql string, vars ...interface{}) string {
-	for idx, v := range vars {
-		if b, ok := v.(bool); ok {
-			if b {
-				vars[idx] = 1
-			} else {
-				vars[idx] = 0
-			}
-		}
-	}
-
-	return logger.ExplainSQL(sql, numericPlaceholder, `'`, vars...)
+	return logger.ExplainSQL(sql, nil, `'`, vars...)
 }
 
 func (dialector Dialector) DataTypeOf(field *schema.Field) string {
