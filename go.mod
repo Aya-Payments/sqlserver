@@ -1,5 +1,5 @@
-module gorm.io/driver/sqlserver
+module github.com/Aya-Payments/sqlserver
 
-go 1.14
+go 1.15
 
-require gorm.io/gorm v1.20.2
+require gorm.io/gorm v1.20.12
